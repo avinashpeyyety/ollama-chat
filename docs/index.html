@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Ollama Chat — local HTTPS chat for best-in-class 9B models. Qwen 3.5 9B + GLM-4 9B on your machine."
+      content="Ollama Chat — local HTTPS chat for best-in-class 9B models. Qwen 3.5 9B + Ornith 9B on your machine."
     />
     <title>Ollama Chat — 9B Local Intelligence</title>
     <link rel="stylesheet" href="styles.css" />
@@ -22,6 +22,7 @@
           <a href="#models">models</a>
           <a href="#install">install</a>
           <a href="#aider">aider</a>
+          <a href="#changelog">changelog</a>
           <a href="#roadmap">roadmap</a>
           <a class="nav-cta" href="https://github.com/avinashpeyyety/ollama-chat-app" target="_blank" rel="noopener">GitHub</a>
         </nav>
@@ -41,11 +42,13 @@
           <a class="btn secondary" href="https://github.com/avinashpeyyety/ollama-chat-app" target="_blank" rel="noopener">View source</a>
         </div>
         <div class="hero-meta">
+          <span>v1.1.0</span>
+          <span>·</span>
           <span>runs at <code>https://localhost:3443</code></span>
           <span>·</span>
-          <span>parallel all-models mode</span>
+          <span>Qwen 3.5 9B + Ornith 9B</span>
           <span>·</span>
-          <span><a href="#aider">terminal coding via Aider</a></span>
+          <span>parallel all-models mode</span>
         </div>
       </section>
 
@@ -63,11 +66,11 @@
           </article>
           <article class="card">
             <h3>9B curated</h3>
-            <p>Pre-configured for Qwen 3.5 9B and GLM-4 9B — compare models side-by-side in one click.</p>
+            <p>Pre-configured for Qwen 3.5 9B and Ornith 9B — compare models side-by-side in one click.</p>
           </article>
           <article class="card">
             <h3>Production-like</h3>
-            <p>HTTPS UI, streaming responses, file attachments, persistent history, server controls.</p>
+            <p>HTTPS UI, live streaming responses, file attachments, collapsible chat history, server controls.</p>
           </article>
         </div>
       </section>
@@ -83,9 +86,9 @@
           </article>
           <article class="card model-card">
             <div class="model-tag alt">alternate</div>
-            <h3>GLM-4 9B</h3>
-            <code>glm4:9b</code>
-            <p>Complementary bilingual reasoning style at the same parameter scale.</p>
+            <h3>Ornith 9B</h3>
+            <code>ornith:9b</code>
+            <p>Agentic coding and reasoning at Qwen 9B+ class on the same parameter scale.</p>
           </article>
         </div>
         <p class="note">
@@ -110,7 +113,7 @@ npm install</code></pre>
             <div>
               <h3>Install Ollama + 9B models</h3>
               <pre><code>brew install ollama && brew services start ollama   # macOS
-npm run install-models   # pulls qwen3.5:9b + glm4:9b</code></pre>
+npm run install-models   # pulls qwen3.5:9b + ornith:9b</code></pre>
             </div>
           </div>
           <div class="step">
@@ -146,10 +149,10 @@ aider --version</code></pre>
           <div class="step">
             <span class="step-num">2</span>
             <div>
-              <h3>Start in the project directory</h3>
-              <pre><code>cd ollama-chat-app
-./scripts/aider-ollama.sh</code></pre>
-              <p class="step-note">macOS: double-click <code>Start Aider.command</code></p>
+              <h3>Install global config (once)</h3>
+              <pre><code>cd aider-local && ./install.sh
+cd ollama-chat-app && aider</code></pre>
+              <p class="step-note">macOS: double-click <code>Start Aider.command</code> on Desktop</p>
             </div>
           </div>
           <div class="step">
@@ -162,26 +165,39 @@ aider --version</code></pre>
           </div>
         </div>
         <ul class="feature-list">
-          <li>Uses <code>qwen3.5:9b</code> or <code>glm4:9b</code> via Ollama</li>
+          <li>Uses <code>qwen3.5:9b</code> or <code>ornith:9b</code> via Ollama</li>
           <li>Edits files with git-aware diffs</li>
           <li>Thinking disabled for snappier Qwen replies</li>
           <li>Same models as the HTTPS chat UI</li>
         </ul>
         <p class="note">
-          Full guide: <a href="https://github.com/avinashpeyyety/ollama-chat-app/blob/main/docs/AIDER.md">docs/AIDER.md</a>
-          · Faster model: <code>AIDER_MODEL=ollama_chat/glm4:9b ./scripts/aider-ollama.sh</code>
+          Aider is independent of this chat app — see the <code>aider-local</code> project.
+          · Faster model: <code>aider-ornith</code>
+          · API model: <code>AIDER_MODEL=openai/gpt-4o aider</code>
         </p>
       </section>
 
       <section class="section features">
         <h2>Features</h2>
         <ul class="feature-list">
+          <li>Live streaming responses (Qwen + Ornith, think-mode aware)</li>
+          <li>Collapsible sidebar history with saved chat count</li>
           <li>Per-model labels in chat</li>
           <li>Parallel all-models responses</li>
           <li>Text &amp; image attachments</li>
           <li>Think-mode for supported models</li>
           <li>Disk + browser chat persistence</li>
           <li>Start / stop / restart from the UI</li>
+        </ul>
+      </section>
+
+      <section id="changelog" class="section">
+        <h2>What's new in v1.1.0</h2>
+        <ul class="feature-list">
+          <li><strong>Ornith 9B</strong> replaces GLM-4 as the alternate 9B model</li>
+          <li><strong>Live streaming</strong> — responses render as they generate</li>
+          <li><strong>Collapsible history</strong> — tuck away past chats to save sidebar space</li>
+          <li>Model installer pulls <code>qwen3.5:9b</code> + <code>ornith:9b</code></li>
         </ul>
       </section>
 

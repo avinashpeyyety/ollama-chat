@@ -178,13 +178,25 @@ if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
   process.exit(1);
 }
 
-https.createServer(
+const server = https.createServer(
   {
     key: fs.readFileSync(keyPath),
     cert: fs.readFileSync(certPath),
   },
   app
-).listen(USER_PORT, async () => {
+);
+
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${USER_PORT} is already in use — a previous server is still running.`);
+    console.error("Stop it first:  npm run stop");
+    console.error("Or restart:      npm run restart-and-test");
+    process.exit(1);
+  }
+  throw error;
+});
+
+server.listen(USER_PORT, async () => {
   console.log(`Ollama Chat supervisor at https://localhost:${USER_PORT}`);
   console.log(`Chat server internal port: ${MAIN_PORT}`);
   const result = await startMainServer();

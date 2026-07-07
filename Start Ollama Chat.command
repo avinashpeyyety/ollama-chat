@@ -10,7 +10,7 @@ if ! command -v ollama >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! ollama list 2>/dev/null | grep -q "qwen3.5:9b\|glm4:9b"; then
+if ! ollama list 2>/dev/null | grep -q "qwen3.5:9b\|ornith:9b"; then
   echo "Recommended 9B models not found. Running installer..."
   npm run install-models
 fi

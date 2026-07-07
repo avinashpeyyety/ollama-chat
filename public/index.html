@@ -44,9 +44,21 @@
           </div>
         </div>
 
-        <div class="history-panel">
-          <div class="history-label">history</div>
-          <div id="history-list" class="history-list"></div>
+        <div id="history-panel" class="history-panel">
+          <button
+            id="history-toggle"
+            type="button"
+            class="history-toggle"
+            aria-expanded="true"
+            aria-controls="history-body"
+          >
+            <span class="history-toggle-label">history</span>
+            <span id="history-count" class="history-count"></span>
+            <span class="history-chevron" aria-hidden="true">▾</span>
+          </button>
+          <div id="history-body" class="history-body">
+            <div id="history-list" class="history-list"></div>
+          </div>
         </div>
 
         <div class="status" id="status">Connecting to Ollama...</div>
@@ -92,6 +104,6 @@
       </main>
     </div>
 
-    <script src="/app.js?v=14"></script>
+    <script src="/app.js?v=16"></script>
   </body>
 </html>

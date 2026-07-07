@@ -18,7 +18,7 @@ The target is the **9B parameter sweet spot**: models large enough for strong re
 | Model | Role | Why |
 |-------|------|-----|
 | **Qwen 3.5 9B** (`qwen3.5:9b`) | Primary general + vision + tools | Strong all-rounder with thinking and image support |
-| **GLM-4 9B** (`glm4:9b`) | Alternate reasoning style | Complementary Chinese-English bilingual model at the same scale |
+| **Ornith 9B** (`ornith:9b`) | Alternate reasoning style | Agentic coding model at Qwen 9B+ class |
 
 Together these form a **dual-model 9B bench** you can query individually or **in parallel** via the **all models** dropdown option.
 
@@ -38,6 +38,7 @@ Together these form a **dual-model 9B bench** you can query individually or **in
 - Streaming responses with **per-model labels** in chat
 - File attachments (text + images for vision models)
 - Think-mode toggle for supported models
+- Collapsible sidebar chat history with saved-count badge
 - Chat history with disk persistence (`~/Library/Application Support/ollama-chat-app/` on macOS)
 - Server start/stop/restart from the sidebar
 - Supervisor stays up when the chat server restarts
@@ -82,7 +83,7 @@ npm run install-models
 
 This downloads:
 - `qwen3.5:9b` (~6.6 GB)
-- `glm4:9b` (~5.5 GB)
+- `ornith:9b` (~5.6 GB)
 
 Or run the full first-time setup in one step:
 
@@ -106,37 +107,14 @@ Open **https://localhost:3443** (accept the self-signed certificate warning).
 
 ## Terminal coding with Aider
 
-Use [Aider](https://aider.chat) to edit this repo from the terminal with the same local Ollama models.
-
-### Install Aider
+Aider is a **separate global install** (not bundled in this repo). See the sibling project [aider-local](../aider-local):
 
 ```bash
-curl -LsSf https://aider.chat/install.sh | sh
+cd "../aider-local" && ./install.sh
+cd /path/to/ollama-chat-app && aider
 ```
 
-### Run in this project
-
-Aider must be started **inside the repo** (not from `~`):
-
-```bash
-./scripts/aider-ollama.sh
-```
-
-**macOS:** double-click `Start Aider.command`
-
-Uses `ollama_chat/qwen3.5:9b` by default. For faster replies:
-
-```bash
-AIDER_MODEL=ollama_chat/glm4:9b ./scripts/aider-ollama.sh
-```
-
-Pre-warm the model to avoid long first-load waits:
-
-```bash
-OLLAMA_KEEP_ALIVE=30m ollama run qwen3.5:9b "ready"
-```
-
-See [docs/AIDER.md](docs/AIDER.md) for performance tips and shell alias setup.
+Uses the same Ollama models by default (`qwen3.5:9b`). API models: `AIDER_MODEL=openai/gpt-4o aider`.
 
 ---
 
@@ -147,7 +125,7 @@ See [docs/AIDER.md](docs/AIDER.md) for performance tips and shell alias setup.
 | `npm start` | Start supervisor + chat server |
 | `npm run stop` | Stop all servers |
 | `npm run setup` | Generate TLS certificates |
-| `npm run install-models` | Pull Qwen 3.5 9B and GLM-4 9B via Ollama |
+| `npm run install-models` | Pull Qwen 3.5 9B and Ornith 9B via Ollama |
 | `npm run setup:full` | Certs + model install + dependency check |
 | `npm run restart-and-test` | Kill ports, restart, smoke-test APIs |
 

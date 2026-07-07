@@ -10,6 +10,9 @@ const attachBtn = document.getElementById("attach-btn");
 const fileInput = document.getElementById("file-input");
 const attachmentsEl = document.getElementById("attachments");
 const activeModelEl = document.getElementById("active-model");
+const historyPanelEl = document.getElementById("history-panel");
+const historyToggleBtn = document.getElementById("history-toggle");
+const historyCountEl = document.getElementById("history-count");
 const historyListEl = document.getElementById("history-list");
 const serverStartBtn = document.getElementById("server-start");
 const serverStopBtn = document.getElementById("server-stop");
@@ -18,6 +21,7 @@ const serverStatusDot = document.getElementById("server-status-dot");
 const serverStatusText = document.getElementById("server-status-text");
 
 const STORAGE_KEY = "ollama-chat-sessions";
+const HISTORY_COLLAPSED_KEY = "ollama-chat-history-collapsed";
 const MAX_ATTACHMENTS = 5;
 const MAX_TEXT_FILE_BYTES = 512 * 1024;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -472,7 +476,11 @@ function addMessage(role, content, attachmentNames = [], extraClass = "", modelN
       <span class="content"></span>
     </div>
   `;
-  node.querySelector(".content").textContent = content;
+  const contentEl = node.querySelector(".content");
+  contentEl.textContent = content;
+  if (extraClass === "thinking" && !content) {
+    contentEl.textContent = "…";
+  }
   messagesEl.appendChild(node);
   messagesEl.scrollTop = messagesEl.scrollHeight;
   return node;
@@ -512,8 +520,33 @@ function renderMessages(chat) {
   }
 }
 
+function setHistoryCollapsed(collapsed) {
+  historyPanelEl.classList.toggle("collapsed", collapsed);
+  historyToggleBtn.setAttribute("aria-expanded", String(!collapsed));
+  try {
+    localStorage.setItem(HISTORY_COLLAPSED_KEY, collapsed ? "1" : "0");
+  } catch {
+    // ignore
+  }
+}
+
+function initHistoryCollapse() {
+  let collapsed = false;
+  try {
+    collapsed = localStorage.getItem(HISTORY_COLLAPSED_KEY) === "1";
+  } catch {
+    collapsed = false;
+  }
+  setHistoryCollapsed(collapsed);
+  historyToggleBtn.addEventListener("click", () => {
+    setHistoryCollapsed(!historyPanelEl.classList.contains("collapsed"));
+  });
+}
+
 function renderHistoryList() {
   historyListEl.innerHTML = "";
+  const persisted = getPersistedChats();
+  historyCountEl.textContent = persisted.length > 0 ? `(${persisted.length})` : "";
 
   if (chats.length === 0) {
     historyListEl.innerHTML = `<div class="history-empty">no saved chats</div>`;
@@ -757,7 +790,7 @@ async function loadModels() {
 
     if (models.length === 0) {
       modelSelect.innerHTML = `<option value="">No models installed</option>`;
-      setStatus("No models found. Run: ollama pull qwen3.5:9b", true);
+      setStatus("No models found. Run: npm run install-models", true);
       setComposerEnabled(false);
       return;
     }
@@ -780,6 +813,44 @@ async function loadModels() {
   }
 }
 
+function updateStreamingContent(assistantNode, contentEl, text, thinking = false) {
+  contentEl.textContent = text;
+  assistantNode.style.removeProperty("display");
+  assistantNode.classList.toggle("thinking", thinking);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function parseStreamLines(buffer) {
+  const lines = buffer.split("\n");
+  return {
+    remainder: lines.pop() || "",
+    lines: lines.filter((line) => line.trim()),
+  };
+}
+
+function processStreamChunk(chunk, think, state) {
+  const message = chunk.message;
+  if (!message) return;
+
+  if (think && message.thinking) {
+    state.thinkingText += message.thinking;
+    return {
+      text: state.thinkingText,
+      thinking: !state.answerText,
+    };
+  }
+
+  if (message.content) {
+    state.answerText += message.content;
+    return {
+      text: state.answerText,
+      thinking: false,
+    };
+  }
+
+  return null;
+}
+
 async function streamToNode(model, messages, think, assistantNode) {
   const response = await fetch("/api/chat", {
     method: "POST",
@@ -797,35 +868,51 @@ async function streamToNode(model, messages, think, assistantNode) {
     throw new Error(data.error || `Request failed with ${response.status}`);
   }
 
+  if (!response.body) {
+    throw new Error("Streaming is not supported in this browser");
+  }
+
   const contentEl = assistantNode.querySelector(".content");
-  let fullText = "";
+  const state = { thinkingText: "", answerText: "" };
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+
+  const handleParsedChunk = (chunk) => {
+    const update = processStreamChunk(chunk, think, state);
+    if (!update) return;
+    updateStreamingContent(assistantNode, contentEl, update.text, update.thinking);
+  };
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
+    const { remainder, lines } = parseStreamLines(buffer);
+    buffer = remainder;
 
     for (const line of lines) {
-      if (!line.trim()) continue;
-      const chunk = JSON.parse(line);
-
-      if (chunk.message?.content) {
-        assistantNode.classList.remove("thinking");
-        fullText += chunk.message.content;
-        contentEl.textContent = fullText;
+      try {
+        handleParsedChunk(JSON.parse(line));
+      } catch {
+        // ignore malformed/partial lines
       }
-
-      messagesEl.scrollTop = messagesEl.scrollHeight;
     }
   }
 
+  buffer += decoder.decode();
+  if (buffer.trim()) {
+    try {
+      handleParsedChunk(JSON.parse(buffer.trim()));
+    } catch {
+      // ignore trailing partial JSON
+    }
+  }
+
+  const fullText = state.answerText || state.thinkingText;
+  updateStreamingContent(assistantNode, contentEl, fullText, false);
   return fullText;
 }
 
@@ -836,11 +923,21 @@ async function streamChatForModel(chat, model, think, userMessage, assistantNode
   try {
     const reply = await streamToNode(model, conversation, think, assistantNode);
     conversation.push({ role: "assistant", content: reply });
+    updateStreamingContent(
+      assistantNode,
+      assistantNode.querySelector(".content"),
+      reply,
+      false
+    );
     return { model, reply, error: null };
   } catch (error) {
     const message = `Error: ${error.message}`;
-    assistantNode.classList.remove("thinking");
-    assistantNode.querySelector(".content").textContent = message;
+    updateStreamingContent(
+      assistantNode,
+      assistantNode.querySelector(".content"),
+      message,
+      false
+    );
     return { model, reply: message, error };
   }
 }
@@ -1158,6 +1255,7 @@ serverStopBtn.addEventListener("click", stopChatServer);
 serverRestartBtn.addEventListener("click", restartChatServer);
 
 async function init() {
+  initHistoryCollapse();
   await pollServerStatus();
   serverPersistenceCapable = await checkServerPersistence();
   const restored = await loadChats();

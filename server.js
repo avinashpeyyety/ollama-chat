@@ -86,10 +86,12 @@ app.post("/api/chat", async (req, res) => {
       return;
     }
 
-    const contentType = response.headers.get("content-type") || "application/json";
+    const contentType = response.headers.get("content-type") || "application/x-ndjson";
     res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders?.();
 
     if (!response.body) {
       res.end();

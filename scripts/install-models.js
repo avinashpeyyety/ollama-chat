@@ -7,9 +7,9 @@ const RECOMMENDED_MODELS = [
     note: "Primary — vision, tools, thinking",
   },
   {
-    name: "glm4:9b",
-    label: "GLM-4 9B",
-    note: "Alternate — strong bilingual reasoning",
+    name: "ornith:9b",
+    label: "Ornith 9B",
+    note: "Alternate — agentic coding, Qwen 9B+ class",
   },
 ];
 
