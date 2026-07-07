@@ -9,7 +9,7 @@ Improvements aligned with the goal: **best-in-class local intelligence in the 9B
 ### Model curation
 - [ ] Curated model presets (Fast / Balanced / Vision / Code)
 - [ ] Auto-detect hardware (RAM/VRAM) and recommend quant levels (Q4_K_M vs Q8)
-- [ ] Model health check on startup (verify `qwen3.5:9b` and `glm4:9b` are pulled)
+- [ ] Model health check on startup (verify `qwen3.5:9b` and `ornith:9b` are pulled)
 - [ ] One-click `ollama pull` from the UI when a model is missing
 
 ### Chat experience

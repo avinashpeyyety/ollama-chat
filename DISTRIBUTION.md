@@ -23,7 +23,7 @@ How to ship Ollama Chat as a **desktop app** and promote it on a **`.io` landing
 1. **Ollama Chat** (Node runtime + app code + certs generator)
 2. **Setup wizard** on first launch:
    - Check/install Ollama
-   - Run `ollama pull qwen3.5:9b` and `ollama pull glm4:9b`
+   - Run `ollama pull qwen3.5:9b` and `ollama pull ornith:9b`
    - Generate TLS certs
    - Open `https://localhost:3443`
 3. **Tray icon** (menu: Open, Restart, Quit)
@@ -122,7 +122,7 @@ User downloads installer
   → Install app to /Applications or Program Files
   → First launch wizard:
       1. "Install Ollama?" → open ollama.com or brew/choco
-      2. "Download models (~12 GB)?" → pull qwen3.5:9b + glm4:9b
+      2. "Download models (~12 GB)?" → pull qwen3.5:9b + ornith:9b
       3. "Generate certificates" → npm run setup
       4. "Launch" → open https://localhost:3443
 ```
