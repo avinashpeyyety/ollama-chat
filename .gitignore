@@ -6,3 +6,9 @@ certs/*.pem
 *.log
 data/
 .aider*
+
+# ensure-git
+.venv/
+
+# ensure-git
+__pycache__/
